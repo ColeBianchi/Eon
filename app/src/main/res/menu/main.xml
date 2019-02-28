@@ -4,8 +4,9 @@
     android:theme="@style/SCBSwitch">
     <item
         android:id="@+id/menuSwitch"
+        android:theme="@style/SCBSwitch"
         android:title=""
-        app:showAsAction="always"
+        android:visible="false"
         app:actionViewClass="android.support.v7.widget.SwitchCompat"
-        android:theme="@style/SCBSwitch"/>
+        app:showAsAction="always" />
 </menu>

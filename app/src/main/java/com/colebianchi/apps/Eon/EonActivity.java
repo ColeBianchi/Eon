@@ -1,6 +1,11 @@
 package com.colebianchi.apps.Eon;
 
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -34,7 +39,9 @@ import java.lang.reflect.Field;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -45,17 +52,15 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-public class VhostsActivity extends AppCompatActivity implements GestureDetector.OnGestureListener
+public class EonActivity extends AppCompatActivity implements GestureDetector.OnGestureListener
 {
 
-	private static final String TAG = VhostsActivity.class.getSimpleName();
+	private static final String TAG = EonActivity.class.getSimpleName();
 	private static final int VPN_REQUEST_CODE = 0x0F;
 	private static final int SELECT_FILE_CODE = 0x05;
-	public static final String PREFS_NAME = VhostsActivity.class.getName();
+	public static final String PREFS_NAME = EonActivity.class.getName();
 	public static final String IS_LOCAL = "IS_LOCAL";
-	public static final String HOSTS_URL = "HOSTS_URL";
 	public static final String HOSTS_URI = "HOST_URI";
-	public static final String NET_HOST_FILE = "net_hosts";
 
 	private boolean waitingForVPNStart;
 
@@ -271,32 +276,6 @@ public class VhostsActivity extends AppCompatActivity implements GestureDetector
 
 	private int checkHostUri()
 	{
-		/*SharedPreferences settings = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-		if (settings.getBoolean(VhostsActivity.IS_LOCAL, true))
-		{
-			try
-			{
-				getContentResolver().openInputStream(Uri.parse(settings.getString(HOSTS_URI, null))).close();
-				return 1;
-			} catch (Exception e)
-			{
-				LogUtils.e(TAG, "HOSTS FILE NOT FOUND", e);
-				return -1;
-			}
-		}
-		else
-		{
-			try
-			{
-				openFileInput(VhostsActivity.NET_HOST_FILE).close();
-				return 2;
-			} catch (Exception e)
-			{
-				LogUtils.e(TAG, "NET HOSTS FILE NOT FOUND", e);
-				return -2;
-			}
-		}*/
-
 		return 1;
 	}
 
@@ -359,7 +338,8 @@ public class VhostsActivity extends AppCompatActivity implements GestureDetector
 	protected void onResume()
 	{
 		super.onResume();
-		setButton(!waitingForVPNStart && !VhostsService.isRunning());
+
+		startVPN();
 
 		rv = findViewById(R.id.rv);
 
@@ -372,6 +352,25 @@ public class VhostsActivity extends AppCompatActivity implements GestureDetector
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		Date date = new Date();
 		String todaysDate = formatter.format(date);
+
+		try
+		{
+			LocalTime cutoffTimeBeg = LocalTime.parse("00:00:00");
+			LocalTime cutoffTimeEnd = LocalTime.parse("04:00:00");
+			LocalTime currentTime = LocalTime.parse(new SimpleDateFormat("HH:mm:ss").format(date));
+
+			if (currentTime.isAfter(cutoffTimeBeg) && currentTime.isBefore(cutoffTimeEnd))
+			{
+				Calendar cal = Calendar.getInstance();
+				cal.add(Calendar.DATE, -1);
+				todaysDate = formatter.format(cal.getTime());
+			}
+		} catch (Exception e)
+		{
+			LogUtils.e(TAG, e.getMessage());
+		}
+
+
 		String url = "http://statsapi.web.nhl.com/api/v1/schedule?teamId=&startDate=" + todaysDate + "&endDate=" + todaysDate + "&expand=schedule.teams,schedule.game.content.media.epg";
 
 		String[] params = new String[1];
@@ -440,7 +439,7 @@ public class VhostsActivity extends AppCompatActivity implements GestureDetector
 			}
 		} catch (Exception e)
 		{
-			popup(e.getMessage(), "Error");
+			//popup(e.getMessage(), "Error");
 			LogUtils.e(TAG, e.getMessage(), e);
 		}
 	}
@@ -458,13 +457,18 @@ public class VhostsActivity extends AppCompatActivity implements GestureDetector
 			String awayAbv = game.getJSONObject("teams").getJSONObject("away").getJSONObject("team").getString("abbreviation");
 			String callName = item.getString("callLetters");
 
+			if (callName.equalsIgnoreCase(""))
+			{
+				callName = "Goalie Cams";
+			}
+
 			if (!data.contains("Not available yet"))
 			{
-				gameCards.add(new GameCard( awayAbv + " @ " + homeAbv, callName, imgID, data));
+				gameCards.add(new GameCard(awayAbv + " @ " + homeAbv, callName, imgID, data));
 			}
 			else
 			{
-				LogUtils.i(TAG, "Not including stream link: " + data);
+				gameCards.add(new GameCard(awayAbv + " @ " + homeAbv, "Game unavailable", imgID, data));
 			}
 
 			RecyclerViewClickListener listener = new RecyclerViewClickListener()
@@ -472,50 +476,48 @@ public class VhostsActivity extends AppCompatActivity implements GestureDetector
 				@Override
 				public void onClick(View view, int position)
 				{
+					setButton(false);
+
 					GameCard card = adapter.gameCards.get(position);
-					String streamURL = card.streamURL;
 
-					LogUtils.i(TAG, streamURL);
+					if (!card.time.contains("Game unavailable"))
+					{
+						String streamURL = card.streamURL;
 
-					Intent intent = new Intent(getBaseContext(), PlayerActivity.class);
+						LogUtils.i(TAG, streamURL);
 
-					Bundle b = new Bundle();
-					b.putString("streamURL", streamURL);
-					intent.putExtras(b);
-					startActivity(intent);
+						Intent intent = new Intent(getBaseContext(), PlayerActivity.class);
+
+						Bundle b = new Bundle();
+						b.putString("streamURL", streamURL);
+						intent.putExtras(b);
+						startActivity(intent);
+					}
 				}
 			};
 
-
 			adapter = new RVAdapter(gameCards, getLayoutInflater(), listener);
 			rv.setAdapter(adapter);
-		}
-		catch (Exception e)
+		} catch (Exception e)
 		{
 			LogUtils.e(TAG, e.getMessage());
 		}
-	}
-
-	private void popup(String msg, String title)
-	{
-		new AlertDialog.Builder(this)
-				.setTitle(title)
-				.setMessage(msg)
-				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener()
-				{
-					public void onClick(DialogInterface dialog, int which)
-					{
-					}
-				})
-				.setNegativeButton(android.R.string.no, null)
-				.setIcon(android.R.drawable.ic_dialog_alert)
-				.show();
 	}
 
 	@Override
 	protected void onStop()
 	{
 		super.onStop();
+
+		//shutdownVPN();
+	}
+
+	@Override
+	public void onDestroy()
+	{
+		super.onDestroy();
+
+		shutdownVPN();
 	}
 
 	private void setButton(boolean enable)

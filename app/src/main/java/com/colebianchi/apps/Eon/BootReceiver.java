@@ -13,14 +13,14 @@ public class BootReceiver extends BroadcastReceiver {
     public static final String RECONNECT_ON_REBOOT = "RECONNECT_ON_REBOOT";
 
     public static void setEnabled(Context context,Boolean enabled){
-        SharedPreferences settings = context.getSharedPreferences(VhostsActivity.PREFS_NAME, Context.MODE_PRIVATE);
+		SharedPreferences settings = context.getSharedPreferences(EonActivity.PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean(RECONNECT_ON_REBOOT, enabled);
         editor.apply();
     }
 
     public static boolean getEnabled(Context context){
-        SharedPreferences settings = context.getSharedPreferences(VhostsActivity.PREFS_NAME, Context.MODE_PRIVATE);
+		SharedPreferences settings = context.getSharedPreferences(EonActivity.PREFS_NAME, Context.MODE_PRIVATE);
         return settings.getBoolean(RECONNECT_ON_REBOOT, false);
     }
 

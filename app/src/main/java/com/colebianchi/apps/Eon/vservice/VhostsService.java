@@ -13,12 +13,17 @@ import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.support.v4.content.LocalBroadcastManager;
 
+import com.colebianchi.apps.Eon.EonActivity;
 import com.colebianchi.apps.Eon.NetworkReceiver;
-import com.github.xfalcon.vhosts.R;
-import com.colebianchi.apps.Eon.VhostsActivity;
 import com.colebianchi.apps.Eon.util.LogUtils;
+import com.github.xfalcon.vhosts.R;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.Selector;
@@ -76,7 +81,7 @@ public class VhostsService extends VpnService
 				manager.createNotificationChannel(channel);
 				Notification notification = new Notification.Builder(this, "vhosts_channel_id")
 						.setSmallIcon(R.mipmap.ic_launcher)
-						.setContentTitle("Virtual Hosts Running")
+						.setContentTitle("Eon Hosts Proxy Running")
 						.build();
 				startForeground(1, notification);
 			}
@@ -86,7 +91,7 @@ public class VhostsService extends VpnService
 		setupVPN();
 		if (vpnInterface == null)
 		{
-			LogUtils.d(TAG, "unknow error");
+			LogUtils.d(TAG, "unknown error");
 			stopVService();
 			return;
 		}
@@ -121,10 +126,10 @@ public class VhostsService extends VpnService
 
 	private void setupHostFile()
 	{
-		SharedPreferences settings = getSharedPreferences(VhostsActivity.PREFS_NAME, Context.MODE_PRIVATE);
-		boolean is_local = settings.getBoolean(VhostsActivity.IS_LOCAL, true);
+		SharedPreferences settings = getSharedPreferences(EonActivity.PREFS_NAME, Context.MODE_PRIVATE);
+		boolean is_local = settings.getBoolean(EonActivity.IS_LOCAL, true);
 
-		String uri_path = settings.getString(VhostsActivity.HOSTS_URI, null);
+		String uri_path = settings.getString(EonActivity.HOSTS_URI, null);
 		try
 		{
 			final InputStream inputStream;
@@ -134,7 +139,7 @@ public class VhostsService extends VpnService
 			}
 			else
 			{
-				inputStream = openFileInput(VhostsActivity.NET_HOST_FILE);
+				inputStream = openFileInput(EonActivity.NET_HOST_FILE);
 			}*/
 
 			inputStream = getAssets().open("hosts");

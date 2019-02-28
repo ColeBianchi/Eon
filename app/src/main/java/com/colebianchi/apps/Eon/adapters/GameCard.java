@@ -2,8 +2,8 @@ package com.colebianchi.apps.Eon.adapters;
 
 public class GameCard
 {
-	String title;
-	String time;
+	public String title;
+	public String time;
 	public String streamURL;
 	int id;
 
