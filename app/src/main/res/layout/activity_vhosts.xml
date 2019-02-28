@@ -4,7 +4,7 @@
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.github.xfalcon.vhosts.com.colebianchi.xfalcon.vhosts.VhostsActivity"
+    tools:context="com.colebianchi.apps.Eon.VhostsActivity"
     android:orientation="vertical">
 
     <LinearLayout
