@@ -15,8 +15,8 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.colebianchi.apps.Eon.EonActivity;
 import com.colebianchi.apps.Eon.NetworkReceiver;
+import com.colebianchi.apps.Eon.R;
 import com.colebianchi.apps.Eon.util.LogUtils;
-import com.github.xfalcon.vhosts.R;
 
 import java.io.Closeable;
 import java.io.FileDescriptor;

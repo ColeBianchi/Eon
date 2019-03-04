@@ -30,5 +30,8 @@
     <string name="down_success">Download Success Get %d Host Records</string>
     <string name="down_error">Download Failed</string>
     <string name="runing_notice">Eon Is Running</string>
+    <string name="more_info">Learn More</string>
     <string name="toggle_btn">Toggle to block ads and enable NHL streaming</string>
+    <string name="update_now">Update</string>
+    <string name="update_later">Later</string>
 </resources>

@@ -1,14 +1,23 @@
 package com.colebianchi.apps.Eon;
 
+import android.Manifest;
+import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.StrictMode;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
@@ -16,6 +25,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
+import android.view.ContextThemeWrapper;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,11 +40,11 @@ import com.colebianchi.apps.Eon.adapters.RVAdapter;
 import com.colebianchi.apps.Eon.listeners.RecyclerViewClickListener;
 import com.colebianchi.apps.Eon.util.LogUtils;
 import com.colebianchi.apps.Eon.vservice.VhostsService;
-import com.github.xfalcon.vhosts.R;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -61,6 +71,8 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 	public static final String PREFS_NAME = EonActivity.class.getName();
 	public static final String IS_LOCAL = "IS_LOCAL";
 	public static final String HOSTS_URI = "HOST_URI";
+	public static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
+	UpdateService updateService;
 
 	private boolean waitingForVPNStart;
 
@@ -179,6 +191,8 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		{
 			e.printStackTrace();
 		}
+
+		updateService = new UpdateService(getBaseContext());
 	}
 
 	@Override
@@ -339,6 +353,59 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 	{
 		super.onResume();
 
+		Thread waitForUpdateServiceReady = new Thread()
+		{
+			@Override
+			public void run()
+			{
+				try
+				{
+					while (!updateService.isReady())
+					{
+						Thread.sleep(100);
+					}
+
+					LogUtils.i(TAG, "Current Version: " + updateService.getCurrentVersion().getVersionNumber());
+
+					if (updateService.isUpdateAvailable())
+					{
+						Snackbar notification = Snackbar.make(findViewById(R.id.activity_main), "An update is available", Snackbar.LENGTH_INDEFINITE);
+						notification.setAction(R.string.more_info, new View.OnClickListener()
+						{
+							@Override
+							public void onClick(View view)
+							{
+								new AlertDialog.Builder(new ContextThemeWrapper(EonActivity.this, R.style.Theme_AppCompat_Dialog))
+										.setTitle(updateService.getLatestVersion().getVersionName())
+										.setMessage(updateService.getLatestVersion().getUpdateMessage())
+										.setPositiveButton(R.string.update_now, new DialogInterface.OnClickListener()
+										{
+											public void onClick(DialogInterface dialog, int which)
+											{
+												updateApp(updateService);
+											}
+										})
+
+										.setNegativeButton(R.string.update_later, null)
+										.setIcon(android.R.drawable.ic_dialog_info)
+										.show();
+							}
+						});
+						notification.show();
+						LogUtils.i(TAG, "Update is available");
+					}
+					else
+					{
+						LogUtils.i(TAG, "No updates available");
+					}
+				} catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+		};
+		waitForUpdateServiceReady.start();
+
 		startVPN();
 
 		rv = findViewById(R.id.rv);
@@ -386,6 +453,82 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		});
 
 		getHTMLAsync.execute(params);
+	}
+
+	private void updateApp(final UpdateService updateService)
+	{
+		try
+		{
+			DownloadManager.Request request = new DownloadManager.Request(Uri.parse(updateService.getLatestVersion().getDownloadURL()));
+			request.setDescription(updateService.getLatestVersion().getUpdateMessage());
+			request.setTitle(updateService.getLatestVersion().getVersionName());
+
+			final Uri uri = Uri.parse("file://" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/Eon/" + updateService.getLatestVersion().getFileName());
+
+			request.setDestinationUri(uri);
+
+			final DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+			final long downloadID = manager.enqueue(request);
+
+			BroadcastReceiver onComplete = new BroadcastReceiver()
+			{
+				@Override
+				public void onReceive(Context context, Intent i)
+				{
+					File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/Eon/", updateService.getLatestVersion().getFileName());
+					Uri fileUri = Uri.fromFile(file);
+
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+					{
+						Uri contentUri = FileProvider.getUriForFile(context, context.getPackageName(), file);
+						Intent openFileIntent = new Intent(Intent.ACTION_VIEW)
+								.setDataAndType(contentUri, "application/vnd.android.package-archive")
+								.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+								.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						startActivity(openFileIntent);
+						unregisterReceiver(this);
+						finish();
+					}
+					else
+					{
+
+						Intent openFileIntent = new Intent(Intent.ACTION_VIEW)
+								.setDataAndType(uri, "application/vnd.android.package-archive")
+								.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						startActivity(openFileIntent);
+						unregisterReceiver(this);
+						finish();
+					}
+				}
+			};
+
+			registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+		} catch (SecurityException e)
+		{
+			int permissionCheck = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+			if (permissionCheck != PackageManager.PERMISSION_GRANTED)
+			{
+				ActivityCompat.requestPermissions(EonActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
+			}
+		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults)
+	{
+		switch (requestCode)
+		{
+			case PERMISSION_WRITE_EXTERNAL_STORAGE:
+				if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED))
+				{
+					updateApp(updateService);
+				}
+				break;
+
+			default:
+				break;
+		}
 	}
 
 	private void displayCards(String rawJSON)

@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.widget.RemoteViews;
 
-import com.github.xfalcon.vhosts.R;
 import com.colebianchi.apps.Eon.vservice.VhostsService;
 
 /**

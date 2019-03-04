@@ -8,8 +8,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.colebianchi.apps.Eon.R;
 import com.colebianchi.apps.Eon.listeners.RecyclerViewClickListener;
-import com.github.xfalcon.vhosts.R;
 
 import java.util.List;
 
