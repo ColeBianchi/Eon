@@ -1,7 +1,20 @@
 ## Eon
 NHL streaming client
 ## Download
-[Download Version 1.1.1 for Android](https://drive.google.com/open?id=10c7wro-UQkuznKnX7DMgdl1oqeIceC6I)
+<br />
+<ol>
+    <li><a href="https://github.com/RaviusSky/Eon/releases">Find the latest release here</a> </li>
+    <li>Under assets download Eon-vX.X.X.apk</li>
+    <li>
+        Open it and follow the install prompt<br>
+        <h5>If the installation fails follow these steps</h5>
+        <ol>
+            <li>Open Google Play</li>
+            <li>Open the Play Protect tab under the navigation panel</li>
+            <li>Disable Scan device for security threats (Because Eon is a third party app it can be considered dangerous, this is just a false positive)</li>
+        </ol>
+    </li>
+</ol>
 
 ## OPEN SOURCE LICENSES
 

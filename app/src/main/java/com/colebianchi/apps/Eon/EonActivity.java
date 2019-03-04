@@ -367,6 +367,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 
 					LogUtils.i(TAG, "Current Version: " + updateService.getCurrentVersion().getVersionNumber());
 
+
 					if (updateService.isUpdateAvailable())
 					{
 						Snackbar notification = Snackbar.make(findViewById(R.id.activity_main), "An update is available", Snackbar.LENGTH_INDEFINITE);
@@ -376,8 +377,8 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 							public void onClick(View view)
 							{
 								new AlertDialog.Builder(new ContextThemeWrapper(EonActivity.this, R.style.Theme_AppCompat_Dialog))
-										.setTitle(updateService.getLatestVersion().getVersionName())
-										.setMessage(updateService.getLatestVersion().getUpdateMessage())
+										.setTitle(updateService.getLatestVersion().getUpdateMessage())
+										.setMessage(updateService.getLatestVersion().getVersionName())
 										.setPositiveButton(R.string.update_now, new DialogInterface.OnClickListener()
 										{
 											public void onClick(DialogInterface dialog, int which)

@@ -9,6 +9,7 @@ import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class UpdateService
 {
@@ -42,33 +43,13 @@ public class UpdateService
 
 	public boolean isUpdateAvailable()
 	{
-		if (githubReleases != null)
+		int avail = versionCompare(getCurrentVersion().getVersionNumber(), getLatestVersion().getVersionNumber());
+
+		LogUtils.i(TAG, avail + "");
+
+		if (avail == -1)
 		{
-			int[] cVersionParts = StringArrToIntArr(getCurrentVersion().getVersionNumber().split("\\."));
-
-			for (AppRelease r : githubReleases)
-			{
-				int[] tVersionParts = StringArrToIntArr(r.getVersionNumber().split("\\."));
-
-				if (cVersionParts[0] < tVersionParts[0])
-				{
-					return true;
-				}
-				else
-				{
-					if (cVersionParts[1] < tVersionParts[1])
-					{
-						return true;
-					}
-					else
-					{
-						if (cVersionParts[2] < tVersionParts[2])
-						{
-							return true;
-						}
-					}
-				}
-			}
+			return true;
 		}
 
 		return false;
@@ -154,13 +135,38 @@ public class UpdateService
 		return null;
 	}
 
-	private int[] StringArrToIntArr(String[] s)
+	private int versionCompare(String str1, String str2)
 	{
-		int[] result = new int[s.length];
-		for (int i = 0; i < s.length; i++)
+		try (Scanner s1 = new Scanner(str1);
+			 Scanner s2 = new Scanner(str2);)
 		{
-			result[i] = Integer.parseInt(s[i]);
-		}
-		return result;
+			s1.useDelimiter("\\.");
+			s2.useDelimiter("\\.");
+
+			while (s1.hasNextInt() && s2.hasNextInt())
+			{
+				int v1 = s1.nextInt();
+				int v2 = s2.nextInt();
+				if (v1 < v2)
+				{
+					return -1;
+				}
+				else if (v1 > v2)
+				{
+					return 1;
+				}
+			}
+
+			if (s1.hasNextInt() && s1.nextInt() != 0)
+			{
+				return 1; //str1 has an additional lower-level version number
+			}
+			if (s2.hasNextInt() && s2.nextInt() != 0)
+			{
+				return -1; //str2 has an additional lower-level version
+			}
+
+			return 0;
+		} // end of try-with-resources
 	}
 }
