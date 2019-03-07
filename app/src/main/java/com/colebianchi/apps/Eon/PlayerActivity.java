@@ -7,8 +7,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ProgressBar;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -39,7 +41,6 @@ import com.google.android.exoplayer2.util.Util;
 import java.io.IOException;
 
 
-
 /**
  * A fullscreen activity to play audio or video streams.
  */
@@ -47,6 +48,7 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 {
 	private SimpleExoPlayer player;
 	private ProgressBar progressBar;
+	private String streamURL;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -58,7 +60,7 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 		setContentView(R.layout.video_player);
 
 		Bundle b = getIntent().getExtras();
-		String streamURL = b.getString("streamURL");
+		streamURL = b.getString("streamURL");
 
 
 		//Create handler
@@ -80,10 +82,10 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 		progressBar = findViewById(R.id.progressBar);
 
 		//Data Source instance stuff
-		DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "Exo2"), (DefaultBandwidthMeter)bandwidthMeter);
+		DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "Exo2"), (DefaultBandwidthMeter) bandwidthMeter);
 
 		//Media Source
-		HlsMediaSource hlsMediaSource = new HlsMediaSource(Uri.parse(streamURL), dataSourceFactory, mainHandler, new AdaptiveMediaSourceEventListener()
+		final HlsMediaSource hlsMediaSource = new HlsMediaSource(Uri.parse(streamURL), dataSourceFactory, mainHandler, new AdaptiveMediaSourceEventListener()
 		{
 			@Override
 			public void onMediaPeriodCreated(int windowIndex, MediaSource.MediaPeriodId mediaPeriodId)
@@ -144,6 +146,33 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 		player.prepare(hlsMediaSource);
 		simpleExoPlayerView.requestFocus();
 		player.setPlayWhenReady(true);
+
+		Button mMediaRouteButton = findViewById(R.id.media_route_button);
+
+		mMediaRouteButton.setOnClickListener(new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View view)
+			{
+				new android.support.v7.app.AlertDialog.Builder(new ContextThemeWrapper(PlayerActivity.this, R.style.Theme_AppCompat_Dialog))
+						.setTitle("Chromecast")
+						.setMessage("To cast game to your chromecast follow these steps:\n" +
+								"1. Open device settings\n" +
+								"2. Open connected devices\n" +
+								"3. Open connection preferences\n" +
+								"4. Open Cast\n" +
+								"5. Select device then return to Eon")
+						.setPositiveButton("Close", null)
+						.setIcon(android.R.drawable.ic_dialog_info)
+						.show();
+			}
+		});
+	}
+
+	@Override
+	public void onResume()
+	{
+		super.onResume();
 	}
 
 	@Override
@@ -177,24 +206,29 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 	}
 
 	@Override
-	public void onTimelineChanged(Timeline timeline, Object manifest, int num) {
+	public void onTimelineChanged(Timeline timeline, Object manifest, int num)
+	{
 
 	}
 
 	@Override
-	public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+	public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections)
+	{
 
 	}
 
 	@Override
-	public void onLoadingChanged(boolean isLoading) {
+	public void onLoadingChanged(boolean isLoading)
+	{
 
 	}
 
 	@Override
-	public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+	public void onPlayerStateChanged(boolean playWhenReady, int playbackState)
+	{
 
-		switch (playbackState) {
+		switch (playbackState)
+		{
 			case Player.STATE_BUFFERING:
 				//You can use progress dialog to show user that video is preparing or buffering so please wait
 				progressBar.setVisibility(View.VISIBLE);
@@ -213,14 +247,17 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 	}
 
 	@Override
-	public void onPlayerError(ExoPlaybackException error) {
+	public void onPlayerError(ExoPlaybackException error)
+	{
 
 		AlertDialog.Builder adb = new AlertDialog.Builder(PlayerActivity.this);
 		adb.setTitle("Could not able to stream video");
 		adb.setMessage("It seems that something is going wrong.\nPlease try again.");
-		adb.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+		adb.setPositiveButton("OK", new DialogInterface.OnClickListener()
+		{
 			@Override
-			public void onClick(DialogInterface dialog, int which) {
+			public void onClick(DialogInterface dialog, int which)
+			{
 				dialog.dismiss();
 				finish(); // take out user from this activity. you can skip this
 			}
@@ -230,15 +267,18 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 	}
 
 	@Override
-	protected void onPause() {
+	protected void onPause()
+	{
 		super.onPause();
-		if (player != null) {
+		if (player != null)
+		{
 			player.setPlayWhenReady(false); //to pause a video because now our video player is not in focus
 		}
 	}
 
 	@Override
-	protected void onDestroy() {
+	protected void onDestroy()
+	{
 		super.onDestroy();
 		player.release();
 	}

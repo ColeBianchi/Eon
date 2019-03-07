@@ -594,6 +594,9 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		JSONObject item = card.item;
 		String data = card.data;
 
+		//Test stream
+		//data = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8";
+
 		try
 		{
 			int imgID = getResources().getIdentifier(game.getJSONObject("teams").getJSONObject("home").getJSONObject("team").getString("abbreviation").toLowerCase(), "drawable", getPackageName());
