@@ -25,6 +25,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.GestureDetector;
 import android.view.Menu;
@@ -539,14 +540,20 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 			Date date = new Date();
 			String todaysDate = formatter.format(date);
-			//String rawJSON = getHTML(url);
 
+			todaysDate = "2019-09-20";
 
 			JSONObject data = new JSONObject(rawJSON);
 			JSONArray games = data.getJSONArray("dates").getJSONObject(0).getJSONArray("games");
 			for (int i = 0; i < games.length(); i++)
 			{
 				JSONObject game = games.getJSONObject(i);
+				JSONObject content = game.getJSONObject("content");
+
+				if (!content.has("media"))
+				{
+					continue;
+				}
 
 				JSONArray medias = game.getJSONObject("content").getJSONObject("media").getJSONArray("epg");
 				for (int x = 0; x < medias.length(); x++)

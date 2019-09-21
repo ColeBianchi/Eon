@@ -6,7 +6,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.WindowManager;
@@ -61,7 +63,6 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 
 		Bundle b = getIntent().getExtras();
 		streamURL = b.getString("streamURL");
-
 
 		//Create handler
 		Handler mainHandler = new Handler();
@@ -154,7 +155,7 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 			@Override
 			public void onClick(View view)
 			{
-				new android.support.v7.app.AlertDialog.Builder(new ContextThemeWrapper(PlayerActivity.this, R.style.Theme_AppCompat_Dialog))
+				/*new android.support.v7.app.AlertDialog.Builder(new ContextThemeWrapper(PlayerActivity.this, R.style.Theme_AppCompat_Dialog))
 						.setTitle("Chromecast")
 						.setMessage("To cast game to your chromecast follow these steps:\n" +
 								"1. Open device settings\n" +
@@ -164,7 +165,20 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 								"5. Select device then return to Eon")
 						.setPositiveButton("Close", null)
 						.setIcon(android.R.drawable.ic_dialog_info)
-						.show();
+						.show();*/
+
+				hideNavigation(view);
+			}
+		});
+
+
+		simpleExoPlayerView.setOnClickListener(new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View v)
+			{
+				Log.i("EON","HELLOWOWOWOW");
+				hideNavigation(v);
 			}
 		});
 	}
@@ -173,6 +187,17 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 	public void onResume()
 	{
 		super.onResume();
+
+		hideNavigation(findViewById(R.id.player_view));
+	}
+
+	public void hideNavigation(View v)
+	{
+		Log.i("EON", "Hding view");
+		View decorView = getWindow().getDecorView();
+		int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_FULLSCREEN;
+		decorView.setSystemUiVisibility(uiOptions);
 	}
 
 	@Override

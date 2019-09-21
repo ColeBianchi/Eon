@@ -21,4 +21,6 @@
     <color name="scb_accent">#FF4081</color>
     <color name="scb_enable">#46bdbf</color>
 
+    <color name="black_overlay">#66000000</color>
+
 </resources>

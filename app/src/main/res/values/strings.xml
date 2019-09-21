@@ -34,4 +34,8 @@
     <string name="toggle_btn">Toggle to block ads and enable NHL streaming</string>
     <string name="update_now">Update</string>
     <string name="update_later">Later</string>
+
+    <string name="title_activity_player2">Player2</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>
