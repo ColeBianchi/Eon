@@ -20,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
+import android.util.Log;
 import android.view.*;
 import android.widget.CompoundButton;
 import android.widget.Toast;
@@ -399,9 +400,13 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		Date date = new Date();
 		String todaysDate = formatter.format(date);
 
+		String currentTime = new SimpleDateFormat("HH:mm:ss").format(date);
+
+		LogUtils.i(TAG, currentTime);
+
 		try
 		{
-			if (isTimeBetweenTwoTime("00:00:00", "09:00:00", new SimpleDateFormat("HH:mm:ss").format(date)))
+			if (isTimeBetweenTwoTime("00:00:00", "09:00:00", currentTime));
 			{
 				Calendar cal = Calendar.getInstance();
 				cal.add(Calendar.DATE, -1);
@@ -413,6 +418,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 			LogUtils.e(TAG, e.getMessage());
 		}
 
+		LogUtils.i(TAG, todaysDate);
 
 		String url = "http://statsapi.web.nhl.com/api/v1/schedule?teamId=&startDate=" + todaysDate + "&endDate=" + todaysDate + "&expand=schedule.teams,schedule.game.content.media.epg";
 
@@ -557,8 +563,6 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 			Date date = new Date();
 			String todaysDate = formatter.format(date);
 
-			todaysDate = "2019-09-20";
-
 			JSONObject data = new JSONObject(rawJSON);
 			JSONArray games = data.getJSONArray("dates").getJSONObject(0).getJSONArray("games");
 			for (int i = 0; i < games.length(); i++)
@@ -568,8 +572,11 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 
 				if (!content.has("media"))
 				{
+					LogUtils.e(TAG, "Content for game does not have media");
 					continue;
 				}
+
+				LogUtils.i(TAG, "Found media");
 
 				JSONArray medias = game.getJSONObject("content").getJSONObject("media").getJSONArray("epg");
 				for (int x = 0; x < medias.length(); x++)
