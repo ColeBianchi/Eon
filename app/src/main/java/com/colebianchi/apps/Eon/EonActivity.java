@@ -398,6 +398,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		Date date = new Date();
 		String todaysDate = formatter.format(date);
+
 		try
 		{
 			if (isTimeBetweenTwoTime("00:00:00", "09:00:00", new SimpleDateFormat("HH:mm:ss").format(date)))
