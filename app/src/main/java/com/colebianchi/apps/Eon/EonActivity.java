@@ -2,12 +2,7 @@ package com.colebianchi.apps.Eon;
 
 import android.Manifest;
 import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -25,43 +20,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
-import android.util.Log;
-import android.view.ContextThemeWrapper;
-import android.view.GestureDetector;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
+import android.view.*;
 import android.widget.CompoundButton;
 import android.widget.Toast;
-
 import com.baidu.mobstat.StatService;
 import com.colebianchi.apps.Eon.adapters.GameCard;
 import com.colebianchi.apps.Eon.adapters.RVAdapter;
 import com.colebianchi.apps.Eon.listeners.RecyclerViewClickListener;
 import com.colebianchi.apps.Eon.util.LogUtils;
 import com.colebianchi.apps.Eon.vservice.VhostsService;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.net.ssl.*;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 public class EonActivity extends AppCompatActivity implements GestureDetector.OnGestureListener
 {
@@ -143,8 +124,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 			}
 		});
 
-		LocalBroadcastManager.getInstance(this).registerReceiver(vpnStateReceiver,
-				new IntentFilter(VhostsService.BROADCAST_VPN_STATE));
+		LocalBroadcastManager.getInstance(this).registerReceiver(vpnStateReceiver, new IntentFilter(VhostsService.BROADCAST_VPN_STATE));
 
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 
@@ -174,8 +154,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 						public void checkServerTrusted(X509Certificate[] certs, String authType)
 						{
 						}
-					}
-			};
+					}};
 
 			SSLContext sc = SSLContext.getInstance("SSL");
 			sc.init(null, victimizedManager, new SecureRandom());
@@ -188,7 +167,8 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 					return true;
 				}
 			});
-		} catch (Exception e)
+		}
+		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
@@ -262,13 +242,15 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 			{
 				Field f = android.provider.DocumentsContract.class.getField("EXTRA_SHOW_ADVANCED");
 				SHOW_ADVANCED = f.get(f.getName()).toString();
-			} catch (NoSuchFieldException e)
+			}
+			catch (NoSuchFieldException e)
 			{
 				LogUtils.e(TAG, e.getMessage(), e);
 				SHOW_ADVANCED = "android.content.extra.SHOW_ADVANCED";
 			}
 			intent.putExtra(SHOW_ADVANCED, true);
-		} catch (Throwable e)
+		}
+		catch (Throwable e)
 		{
 			LogUtils.e(TAG, "SET EXTRA_SHOW_ADVANCED", e);
 		}
@@ -299,9 +281,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		SharedPreferences settings = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = settings.edit();
 		Uri uri = intent.getData();
-		final int takeFlags = intent.getFlags()
-				& (Intent.FLAG_GRANT_READ_URI_PERMISSION
-				| Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+		final int takeFlags = intent.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 		try
 		{
 			getContentResolver().takePersistableUriPermission(uri, takeFlags);
@@ -317,7 +297,8 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 				Toast.makeText(this, R.string.permission_error, Toast.LENGTH_LONG).show();
 			}
 
-		} catch (Exception e)
+		}
+		catch (Exception e)
 		{
 			LogUtils.e(TAG, "permission error", e);
 		}
@@ -377,20 +358,15 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 							@Override
 							public void onClick(View view)
 							{
-								new AlertDialog.Builder(new ContextThemeWrapper(EonActivity.this, R.style.Theme_AppCompat_Dialog))
-										.setTitle(updateService.getLatestVersion().getUpdateMessage())
-										.setMessage(updateService.getLatestVersion().getVersionName())
-										.setPositiveButton(R.string.update_now, new DialogInterface.OnClickListener()
-										{
-											public void onClick(DialogInterface dialog, int which)
-											{
-												updateApp(updateService);
-											}
-										})
+								new AlertDialog.Builder(new ContextThemeWrapper(EonActivity.this, R.style.Theme_AppCompat_Dialog)).setTitle(updateService.getLatestVersion().getUpdateMessage()).setMessage(updateService.getLatestVersion().getVersionName()).setPositiveButton(R.string.update_now, new DialogInterface.OnClickListener()
+								{
+									public void onClick(DialogInterface dialog, int which)
+									{
+										updateApp(updateService);
+									}
+								})
 
-										.setNegativeButton(R.string.update_later, null)
-										.setIcon(android.R.drawable.ic_dialog_info)
-										.show();
+										.setNegativeButton(R.string.update_later, null).setIcon(android.R.drawable.ic_dialog_info).show();
 							}
 						});
 						notification.show();
@@ -400,7 +376,8 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 					{
 						LogUtils.i(TAG, "No updates available");
 					}
-				} catch (Exception e)
+				}
+				catch (Exception e)
 				{
 					e.printStackTrace();
 				}
@@ -421,20 +398,16 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		Date date = new Date();
 		String todaysDate = formatter.format(date);
-
 		try
 		{
-			LocalTime cutoffTimeBeg = LocalTime.parse("00:00:00");
-			LocalTime cutoffTimeEnd = LocalTime.parse("04:00:00");
-			LocalTime currentTime = LocalTime.parse(new SimpleDateFormat("HH:mm:ss").format(date));
-
-			if (currentTime.isAfter(cutoffTimeBeg) && currentTime.isBefore(cutoffTimeEnd))
+			if (isTimeBetweenTwoTime("00:00:00", "09:00:00", new SimpleDateFormat("HH:mm:ss").format(date)))
 			{
 				Calendar cal = Calendar.getInstance();
 				cal.add(Calendar.DATE, -1);
 				todaysDate = formatter.format(cal.getTime());
 			}
-		} catch (Exception e)
+		}
+		catch (Exception e)
 		{
 			LogUtils.e(TAG, e.getMessage());
 		}
@@ -455,6 +428,52 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		});
 
 		getHTMLAsync.execute(params);
+	}
+
+	public static boolean isTimeBetweenTwoTime(String initialTime, String finalTime, String currentTime) throws ParseException
+	{
+
+		String reg = "^([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$";
+		if (initialTime.matches(reg) && finalTime.matches(reg) && currentTime.matches(reg))
+		{
+			boolean valid = false;
+			//Start Time
+			//all times are from java.util.Date
+			Date inTime = new SimpleDateFormat("HH:mm:ss").parse(initialTime);
+			Calendar calendar1 = Calendar.getInstance();
+			calendar1.setTime(inTime);
+
+			//Current Time
+			Date checkTime = new SimpleDateFormat("HH:mm:ss").parse(currentTime);
+			Calendar calendar3 = Calendar.getInstance();
+			calendar3.setTime(checkTime);
+
+			//End Time
+			Date finTime = new SimpleDateFormat("HH:mm:ss").parse(finalTime);
+			Calendar calendar2 = Calendar.getInstance();
+			calendar2.setTime(finTime);
+
+			if (finalTime.compareTo(initialTime) < 0)
+			{
+				calendar2.add(Calendar.DATE, 1);
+				calendar3.add(Calendar.DATE, 1);
+			}
+
+			java.util.Date actualTime = calendar3.getTime();
+			if ((actualTime.after(calendar1.getTime()) || actualTime.compareTo(calendar1.getTime()) == 0) && actualTime.before(calendar2.getTime()))
+			{
+				valid = true;
+				return valid;
+			}
+			else
+			{
+				throw new IllegalArgumentException("Not a valid time, expecting HH:MM:SS format");
+			}
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	private void updateApp(final UpdateService updateService)
@@ -483,10 +502,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
 					{
 						Uri contentUri = FileProvider.getUriForFile(context, context.getPackageName(), file);
-						Intent openFileIntent = new Intent(Intent.ACTION_VIEW)
-								.setDataAndType(contentUri, "application/vnd.android.package-archive")
-								.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-								.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						Intent openFileIntent = new Intent(Intent.ACTION_VIEW).setDataAndType(contentUri, "application/vnd.android.package-archive").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 						startActivity(openFileIntent);
 						unregisterReceiver(this);
 						finish();
@@ -494,9 +510,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 					else
 					{
 
-						Intent openFileIntent = new Intent(Intent.ACTION_VIEW)
-								.setDataAndType(uri, "application/vnd.android.package-archive")
-								.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						Intent openFileIntent = new Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/vnd.android.package-archive").setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 						startActivity(openFileIntent);
 						unregisterReceiver(this);
 						finish();
@@ -505,7 +519,8 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 			};
 
 			registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-		} catch (SecurityException e)
+		}
+		catch (SecurityException e)
 		{
 			int permissionCheck = ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
@@ -588,7 +603,8 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 					}
 				}
 			}
-		} catch (Exception e)
+		}
+		catch (Exception e)
 		{
 			//popup(e.getMessage(), "Error");
 			LogUtils.e(TAG, e.getMessage(), e);
@@ -652,7 +668,8 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 
 			adapter = new RVAdapter(gameCards, getLayoutInflater(), listener);
 			rv.setAdapter(adapter);
-		} catch (Exception e)
+		}
+		catch (Exception e)
 		{
 			LogUtils.e(TAG, e.getMessage());
 		}
