@@ -10,6 +10,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -149,14 +150,14 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 		simpleExoPlayerView.requestFocus();
 		player.setPlayWhenReady(true);
 
-		Button mMediaRouteButton = findViewById(R.id.media_route_button);
+		/*Button mMediaRouteButton = findViewById(R.id.media_route_button);
 
 		mMediaRouteButton.setOnClickListener(new View.OnClickListener()
 		{
 			@Override
 			public void onClick(View view)
 			{
-				/*new android.support.v7.app.AlertDialog.Builder(new ContextThemeWrapper(PlayerActivity.this, R.style.Theme_AppCompat_Dialog))
+				*//*new android.support.v7.app.AlertDialog.Builder(new ContextThemeWrapper(PlayerActivity.this, R.style.Theme_AppCompat_Dialog))
 						.setTitle("Chromecast")
 						.setMessage("To cast game to your chromecast follow these steps:\n" +
 								"1. Open device settings\n" +
@@ -166,22 +167,19 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 								"5. Select device then return to Eon")
 						.setPositiveButton("Close", null)
 						.setIcon(android.R.drawable.ic_dialog_info)
-						.show();*/
+						.show();*//*
 
-				hideNavigation(view);
+				hideNavigation();
 			}
-		});
+		});*/
+	}
 
-
-		simpleExoPlayerView.setOnClickListener(new View.OnClickListener()
-		{
-			@Override
-			public void onClick(View v)
-			{
-				Log.i("EON","HELLOWOWOWOW");
-				hideNavigation(v);
-			}
-		});
+	@Override
+	public boolean onTouchEvent(MotionEvent event)
+	{
+		hideNavigation();
+		Log.i("EON", "Tocuhed");
+		return super.onTouchEvent(event);
 	}
 
 	@Override
@@ -189,10 +187,10 @@ public class PlayerActivity extends AppCompatActivity implements ExoPlayer.Event
 	{
 		super.onResume();
 
-		hideNavigation(findViewById(R.id.player_view));
+		hideNavigation();
 	}
 
-	public void hideNavigation(View v)
+	public void hideNavigation()
 	{
 		Log.i("EON", "Hding view");
 		View decorView = getWindow().getDecorView();
