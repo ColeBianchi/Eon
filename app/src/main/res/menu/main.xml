@@ -9,4 +9,10 @@
         android:visible="false"
         app:actionViewClass="android.support.v7.widget.SwitchCompat"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_pick_date"
+        android:icon="@drawable/calendar"
+        android:title="@string/action_calendar"
+        app:showAsAction="always" />
 </menu>

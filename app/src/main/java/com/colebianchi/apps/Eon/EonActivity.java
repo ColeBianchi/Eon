@@ -1,6 +1,7 @@
 package com.colebianchi.apps.Eon;
 
 import android.Manifest;
+import android.app.DatePickerDialog;
 import android.app.DownloadManager;
 import android.content.*;
 import android.content.pm.PackageManager;
@@ -22,7 +23,9 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.view.*;
+import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.DatePicker;
 import android.widget.Toast;
 import com.baidu.mobstat.StatService;
 import com.colebianchi.apps.Eon.adapters.GameCard;
@@ -63,6 +66,9 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 	private List<GameCard> gameCards;
 	private RecyclerView rv;
 	private RVAdapter adapter;
+	private String todaysDate;
+	private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+	private MenuItem datePickerMenuItem;
 
 	private BroadcastReceiver vpnStateReceiver = new BroadcastReceiver()
 	{
@@ -175,6 +181,63 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		}
 
 		updateService = new UpdateService(getBaseContext());
+
+		Date date = new Date();
+		todaysDate = formatter.format(date);
+
+		Bundle bundle = getIntent().getExtras();
+
+		if (getIntent().hasExtra("date"))
+		{
+			todaysDate = bundle.getString("date");
+			LogUtils.i(TAG, "Changing date to "+todaysDate);
+		}
+		else
+		{
+			LogUtils.i(TAG, "No custom date specified");
+		}
+	}
+
+	public void selectDateListenerSetup()
+	{
+		final Calendar cal = Calendar.getInstance();
+
+		final DatePickerDialog.OnDateSetListener datePicker = new DatePickerDialog.OnDateSetListener()
+		{
+			@Override
+			public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth)
+			{
+				cal.set(Calendar.YEAR, year);
+				cal.set(Calendar.MONTH, monthOfYear);
+				cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+				todaysDate = formatter.format(cal.getTime());
+
+				LogUtils.i(TAG, "New Date Selected: "+todaysDate);
+
+				onResume();
+			}
+		};
+
+		datePickerMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener()
+		{
+			public boolean onMenuItemClick(MenuItem m)
+			{
+				try
+				{
+					Date d = formatter.parse(todaysDate);
+					Calendar today = Calendar.getInstance();
+					today.setTime(d);
+
+					new DatePickerDialog(EonActivity.this, R.style.datepicker, datePicker, today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH)).show();
+				}
+				catch (Exception e)
+				{
+					LogUtils.e(TAG, e.getMessage());
+				}
+
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -183,6 +246,10 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		super.onCreateOptionsMenu(menu);
 
 		getMenuInflater().inflate(R.menu.main, menu);
+
+		datePickerMenuItem = menu.findItem(R.id.action_pick_date);
+
+		selectDateListenerSetup();
 
 		final MenuItem toggleservice = menu.findItem(R.id.menuSwitch);
 		SwitchCompat actionView = (SwitchCompat) MenuItemCompat.getActionView(toggleservice);
@@ -396,13 +463,10 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 
 		gameCards = new ArrayList<>();
 
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		/*SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		Date date = new Date();
-		String todaysDate = formatter.format(date);
 
 		String currentTime = new SimpleDateFormat("HH:mm:ss").format(date);
-
-		LogUtils.i(TAG, currentTime);
 
 		try
 		{
@@ -416,9 +480,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		catch (Exception e)
 		{
 			LogUtils.e(TAG, e.getMessage());
-		}
-
-		LogUtils.i(TAG, todaysDate);
+		}*/
 
 		String url = "http://statsapi.web.nhl.com/api/v1/schedule?teamId=&startDate=" + todaysDate + "&endDate=" + todaysDate + "&expand=schedule.teams,schedule.game.content.media.epg";
 
@@ -437,7 +499,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		getHTMLAsync.execute(params);
 	}
 
-	public static boolean isTimeBetweenTwoTime(String initialTime, String finalTime, String currentTime) throws ParseException
+	public boolean isTimeBetweenTwoTime(String initialTime, String finalTime, String currentTime) throws ParseException
 	{
 
 		String reg = "^([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$";
@@ -559,10 +621,6 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 	{
 		try
 		{
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-			Date date = new Date();
-			String todaysDate = formatter.format(date);
-
 			JSONObject data = new JSONObject(rawJSON);
 			JSONArray games = data.getJSONArray("dates").getJSONObject(0).getJSONArray("games");
 			for (int i = 0; i < games.length(); i++)
