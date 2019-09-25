@@ -68,11 +68,11 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.GameViewHolder>
 	}
 
 	@Override
-	public void onBindViewHolder(GameViewHolder personViewHolder, int i)
+	public void onBindViewHolder(GameViewHolder gameViewHolder, int i)
 	{
-		personViewHolder.title.setText(gameCards.get(i).title);
-		personViewHolder.time.setText(gameCards.get(i).time);
-		personViewHolder.homeLogo.setImageResource(gameCards.get(i).id);
+		gameViewHolder.title.setText(gameCards.get(i).title);
+		gameViewHolder.time.setText(gameCards.get(i).time);
+		gameViewHolder.homeLogo.setImageResource(gameCards.get(i).id);
 	}
 
 	@Override

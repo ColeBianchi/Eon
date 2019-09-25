@@ -23,7 +23,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.view.*;
-import android.widget.Button;
+import android.view.inputmethod.BaseInputConnection;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.Toast;
@@ -41,7 +41,6 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -69,6 +68,9 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 	private String todaysDate;
 	private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 	private MenuItem datePickerMenuItem;
+	private int cursorPosition = 0;
+	private DatePickerDialog.OnDateSetListener datePicker;
+	private String rawJSON;
 
 	private BroadcastReceiver vpnStateReceiver = new BroadcastReceiver()
 	{
@@ -190,7 +192,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		if (getIntent().hasExtra("date"))
 		{
 			todaysDate = bundle.getString("date");
-			LogUtils.i(TAG, "Changing date to "+todaysDate);
+			LogUtils.i(TAG, "Changing date to " + todaysDate);
 		}
 		else
 		{
@@ -202,7 +204,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 	{
 		final Calendar cal = Calendar.getInstance();
 
-		final DatePickerDialog.OnDateSetListener datePicker = new DatePickerDialog.OnDateSetListener()
+		datePicker = new DatePickerDialog.OnDateSetListener()
 		{
 			@Override
 			public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth)
@@ -212,7 +214,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 				cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 				todaysDate = formatter.format(cal.getTime());
 
-				LogUtils.i(TAG, "New Date Selected: "+todaysDate);
+				LogUtils.i(TAG, "New Date Selected: " + todaysDate);
 
 				onResume();
 			}
@@ -222,22 +224,27 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		{
 			public boolean onMenuItemClick(MenuItem m)
 			{
-				try
-				{
-					Date d = formatter.parse(todaysDate);
-					Calendar today = Calendar.getInstance();
-					today.setTime(d);
-
-					new DatePickerDialog(EonActivity.this, R.style.datepicker, datePicker, today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH)).show();
-				}
-				catch (Exception e)
-				{
-					LogUtils.e(TAG, e.getMessage());
-				}
+				openDateSelector();
 
 				return true;
 			}
 		});
+	}
+
+	private void openDateSelector()
+	{
+		try
+		{
+			Date d = formatter.parse(todaysDate);
+			Calendar today = Calendar.getInstance();
+			today.setTime(d);
+
+			new DatePickerDialog(EonActivity.this, R.style.datepicker, datePicker, today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH)).show();
+		}
+		catch (Exception e)
+		{
+			LogUtils.e(TAG, e.getMessage());
+		}
 	}
 
 	@Override
@@ -463,25 +470,6 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 
 		gameCards = new ArrayList<>();
 
-		/*SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-		Date date = new Date();
-
-		String currentTime = new SimpleDateFormat("HH:mm:ss").format(date);
-
-		try
-		{
-			if (isTimeBetweenTwoTime("00:00:00", "09:00:00", currentTime));
-			{
-				Calendar cal = Calendar.getInstance();
-				cal.add(Calendar.DATE, -1);
-				todaysDate = formatter.format(cal.getTime());
-			}
-		}
-		catch (Exception e)
-		{
-			LogUtils.e(TAG, e.getMessage());
-		}*/
-
 		String url = "http://statsapi.web.nhl.com/api/v1/schedule?teamId=&startDate=" + todaysDate + "&endDate=" + todaysDate + "&expand=schedule.teams,schedule.game.content.media.epg";
 
 		String[] params = new String[1];
@@ -492,57 +480,12 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 			@Override
 			public void processFinish(String output)
 			{
-				displayCards(output);
+				rawJSON = output;
+				displayCards(-1);
 			}
 		});
 
 		getHTMLAsync.execute(params);
-	}
-
-	public boolean isTimeBetweenTwoTime(String initialTime, String finalTime, String currentTime) throws ParseException
-	{
-
-		String reg = "^([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$";
-		if (initialTime.matches(reg) && finalTime.matches(reg) && currentTime.matches(reg))
-		{
-			boolean valid = false;
-			//Start Time
-			//all times are from java.util.Date
-			Date inTime = new SimpleDateFormat("HH:mm:ss").parse(initialTime);
-			Calendar calendar1 = Calendar.getInstance();
-			calendar1.setTime(inTime);
-
-			//Current Time
-			Date checkTime = new SimpleDateFormat("HH:mm:ss").parse(currentTime);
-			Calendar calendar3 = Calendar.getInstance();
-			calendar3.setTime(checkTime);
-
-			//End Time
-			Date finTime = new SimpleDateFormat("HH:mm:ss").parse(finalTime);
-			Calendar calendar2 = Calendar.getInstance();
-			calendar2.setTime(finTime);
-
-			if (finalTime.compareTo(initialTime) < 0)
-			{
-				calendar2.add(Calendar.DATE, 1);
-				calendar3.add(Calendar.DATE, 1);
-			}
-
-			java.util.Date actualTime = calendar3.getTime();
-			if ((actualTime.after(calendar1.getTime()) || actualTime.compareTo(calendar1.getTime()) == 0) && actualTime.before(calendar2.getTime()))
-			{
-				valid = true;
-				return valid;
-			}
-			else
-			{
-				throw new IllegalArgumentException("Not a valid time, expecting HH:MM:SS format");
-			}
-		}
-		else
-		{
-			return false;
-		}
 	}
 
 	private void updateApp(final UpdateService updateService)
@@ -617,7 +560,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		}
 	}
 
-	private void displayCards(String rawJSON)
+	private void displayCards(int focused)
 	{
 		try
 		{
@@ -650,8 +593,6 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 
 							String streamURL = "http://freesports.ddns.net/getM3U8.php?league=NHL&id=" + item.getString("mediaPlaybackId") + "&cdn=akc&date=" + todaysDate;
 
-							//streamURL = getHTML(streamURL);
-
 							GameCardContainer[] params = new GameCardContainer[1];
 							params[0] = new GameCardContainer(streamURL, game, item);
 
@@ -683,9 +624,6 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		JSONObject item = card.item;
 		String data = card.data;
 
-		//Test stream
-		//data = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8";
-
 		try
 		{
 			int imgID = getResources().getIdentifier(game.getJSONObject("teams").getJSONObject("home").getJSONObject("team").getString("abbreviation").toLowerCase(), "drawable", getPackageName());
@@ -712,23 +650,7 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 				@Override
 				public void onClick(View view, int position)
 				{
-					setButton(false);
-
-					GameCard card = adapter.gameCards.get(position);
-
-					if (!card.time.contains("Game unavailable"))
-					{
-						String streamURL = card.streamURL;
-
-						LogUtils.i(TAG, streamURL);
-
-						Intent intent = new Intent(getBaseContext(), PlayerActivity.class);
-
-						Bundle b = new Bundle();
-						b.putString("streamURL", streamURL);
-						intent.putExtras(b);
-						startActivity(intent);
-					}
+					openStream(position);
 				}
 			};
 
@@ -739,6 +661,80 @@ public class EonActivity extends AppCompatActivity implements GestureDetector.On
 		{
 			LogUtils.e(TAG, e.getMessage());
 		}
+	}
+
+	private void openStream(int position)
+	{
+		setButton(false);
+
+		GameCard card = adapter.gameCards.get(position);
+
+		if (!card.time.contains("Game unavailable"))
+		{
+			String streamURL = card.streamURL;
+
+			LogUtils.i(TAG, streamURL);
+
+			Intent intent = new Intent(getBaseContext(), PlayerActivity.class);
+
+			Bundle b = new Bundle();
+			b.putString("streamURL", streamURL);
+			intent.putExtras(b);
+			startActivity(intent);
+		}
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event)
+	{
+		int direction = 1;
+
+		switch (keyCode)
+		{
+			case KeyEvent.KEYCODE_DPAD_CENTER:
+			//case KeyEvent.KEYCODE_Q:
+					if (cursorPosition != -1)
+					{
+						openStream(cursorPosition);
+						direction = 1;
+					}
+				break;
+			case KeyEvent.KEYCODE_DPAD_UP:
+			//case KeyEvent.KEYCODE_W:
+					if (cursorPosition != -1)
+					{
+						cursorPosition--;
+						direction = -1;
+					}
+					else if (cursorPosition == -1)
+					{
+						openDateSelector();
+					}
+				break;
+			case KeyEvent.KEYCODE_DPAD_DOWN:
+			//case KeyEvent.KEYCODE_S:
+					if (cursorPosition != adapter.getItemCount()-1)
+					{
+						cursorPosition++;
+					}
+				break;
+			default: break;
+		}
+
+		if (cursorPosition == -1)
+		{
+			datePickerMenuItem.setChecked(true);
+		}
+		else
+		{
+			rv.scrollToPosition(cursorPosition+direction);
+
+			rv.findViewHolderForAdapterPosition(cursorPosition).itemView.requestFocus();
+		}
+
+		LogUtils.i(TAG, cursorPosition+" selected KEYCODE: "+keyCode);
+
+		return super.onKeyDown(keyCode, event);
 	}
 
 	@Override
