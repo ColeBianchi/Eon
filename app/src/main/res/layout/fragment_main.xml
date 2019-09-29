@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context=".MainActivity$GameFragment">
+    <android.support.constraint.ConstraintLayout android:id="@+id/gameLayout"
+                                                 android:layout_width="match_parent"
+                                                 android:layout_height="match_parent">
+        <TextView
+                android:text="PIT @ VGK"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/gameTitle" app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"
+                android:textSize="36sp"/>
+        <android.support.constraint.ConstraintLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:id="@+id/logoLayout"
+                app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/gameTitle" android:layout_marginTop="50dp">
+            <ImageView
+                    android:src="@drawable/pit"
+                    android:layout_height="85dp"
+                    android:id="@+id/awayLogo"
+                    android:adjustViewBounds="true" android:scaleType="centerCrop" android:layout_width="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@+id/awayRecord"
+                    app:layout_constraintEnd_toStartOf="@+id/homeLogo"
+            />
+            <ImageView
+                    android:src="@drawable/vgk"
+                    android:layout_height="85dp"
+                    android:layout_width="wrap_content"
+                    android:id="@+id/homeLogo"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toTopOf="@+id/homeRecord"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/awayLogo"
+            />
+            <TextView
+                    android:text="0-0-0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/awayRecord"
+                    app:layout_constraintTop_toBottomOf="@+id/awayLogo"
+                    app:layout_constraintStart_toStartOf="@+id/awayLogo"
+                    app:layout_constraintEnd_toEndOf="@+id/awayLogo"/>
+            <TextView
+                    android:text="0-0-0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/homeRecord"
+                    app:layout_constraintTop_toBottomOf="@+id/homeLogo"
+                    app:layout_constraintStart_toStartOf="@+id/homeLogo"
+                    app:layout_constraintEnd_toEndOf="@+id/homeLogo"/>
+
+            <Spinner
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/streamSource"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/watchButton"
+                    android:layout_marginStart="8dp"
+                    app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="32dp"/>
+            <Button
+                    android:text="Watch"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:id="@+id/watchButton"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/streamSource"
+                    android:layout_marginStart="8dp"
+                    app:layout_constraintEnd_toEndOf="parent" android:layout_marginBottom="32dp"/>
+            <TextView
+                    android:text="1st Period"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/gameStatus"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/awayRecord"
+                    android:layout_marginTop="32dp" android:textSize="24sp"/>
+            <TextView
+                    android:text="0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/awayScore"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/gameStatus"
+                    app:layout_constraintEnd_toStartOf="@+id/homeScore"
+                    android:textSize="72sp"/>
+            <TextView
+                    android:text="0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/homeScore"
+                    app:layout_constraintStart_toEndOf="@+id/awayScore"
+                    app:layout_constraintTop_toBottomOf="@+id/gameStatus"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:textSize="72sp"/>
+        </android.support.constraint.ConstraintLayout>
+    </android.support.constraint.ConstraintLayout>
+</FrameLayout>

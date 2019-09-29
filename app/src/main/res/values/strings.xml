@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Eon</string>
+    <string name="title_activity_game">GameActivity</string>
+
+    <string name="title_activity_video_player">VideoPlayerActivity</string>
+    <string name="action_calendar">Date Picker</string>
+
+    <string name="update_now">Update</string>
+    <string name="update_later">Later</string>
+    <string name="more_info">Learn More</string>
+</resources>
