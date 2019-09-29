@@ -19,7 +19,7 @@ NHL streaming client
 ## OPEN SOURCE LICENSES
 
 <ul>
-    <li>LocalVPN: <a href="https://github.com/hexene/LocalVPN/blob/master/README.md">APL 2.0</a></li>
+    <li>Virtual Hosts: <a href="https://github.com/x-falcon/Virtual-Hosts">GNU General Public License v3.0</a></li>
 </ul>
 
 ### LICENSE
